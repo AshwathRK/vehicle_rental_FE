@@ -10,7 +10,7 @@ const HTTP_Server = express();
 
 // ✅ Parse JSON and URL-encoded data
 HTTP_Server.use(express.json());
-HTTP_Server.use(express.urlencoded({ extended: false }));
+HTTP_Server.use(express.urlencoded({ extended: true }));
 
 // ✅ Parse cookies
 HTTP_Server.use(cookieParser());
