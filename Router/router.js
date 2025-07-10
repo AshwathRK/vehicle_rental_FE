@@ -1,5 +1,11 @@
 const express = require('express');
-const verifyTokenfromCookies = require('../Middleware/auth')
+const router = express.Router();
+
+// Middleware
+const verifyTokenfromCookies = require('../Middleware/auth');
+const upload = require('../Middleware/upload.js');
+
+// ==================== AUTHENTICATION ROUTES ==================== //
 const {
   handleGetLogin,
   handleGetSignUp,
@@ -10,7 +16,16 @@ const {
   logoutUser
 } = require('../Controllers/user');
 
-const upload = require('../Middleware/upload.js');
+// Login and Signup
+router.get('/', verifyTokenfromCookies, handleGetLogin);       // Get login page (if user has token)
+router.post('/', handlePostLogin);                             // Login user
+router.get('/signup', handleGetSignUp);                        // Get signup page
+router.post('/signup', handlePostSignUp);                      // Register new user
+router.get('/user', verifyTokenfromCookies, getUserDetails);   // Get logged-in user details
+// router.patch('/user', verifyTokenfromCookies, handleUpdateUser); // (Optional) Update user
+router.get('/logout', logoutUser);                             // Logout and clear token
+
+// ==================== CATEGORY ROUTES ==================== //
 const {
   getAllCategory,
   createCategory,
@@ -19,10 +34,27 @@ const {
   createVehicle,
   getVehicles,
   getVehicleById,
+  getTopBookedVehicles,
   updateVehicle,
   deleteVehicle
 } = require('../Controllers/vehicle.js');
 
+// Category CRUD
+router.get('/categories', getAllCategory);                         // Get all categories
+router.post('/categorie', upload.array('images'), createCategory); // Create category with image upload
+router.put('/categorie/:id', upload.array('images'), updateCategory); // Update category by ID
+router.delete('/categorie/:id', upload.array('images'), deleteCategory); // Delete category by ID
+
+// ==================== VEHICLE ROUTES ==================== //
+// Vehicle CRUD and Listing
+router.post('/vehicle', upload.array('images', 5), createVehicle);  // Create vehicle with up to 5 images
+router.get('/vehicle', getVehicles);                                // Get all vehicles
+router.get('/vehicle/:id', getVehicleById);                         // Get vehicle by ID
+router.get('/topbooking', getTopBookedVehicles);                    // Get most booked vehicles / limit 6
+router.put('/vehicle/:id', upload.array('images', 5), updateVehicle); // Update vehicle
+router.delete('/vehicle/:id', deleteVehicle);                       // Delete vehicle
+
+// ==================== BOOKING STATUS ROUTES ==================== //
 const {
   handleGetBookingStatusByCarId,
   handleGetBookingStatusByUserId,
@@ -32,58 +64,27 @@ const {
   handleDeleteBookingStatus
 } = require('../Controllers/booking_status.js');
 
+// Bookings
+router.get('/booking/car/:carId', handleGetBookingStatusByCarId);       // Bookings by car
+router.get('/booking/user/:userId', handleGetBookingStatusByUserId);    // Bookings by user
+router.get('/booking/:bookingId', handleGetBookingsStatusByBookingId);  // Booking by booking ID
+router.post('/booking', handleCreateBookingStatus);                     // Create booking
+router.put('/booking/:bookingId', handleUpdateBookingStatus);           // Update booking
+router.delete('/booking/:bookingId', handleDeleteBookingStatus);        // Delete booking
+
+// ==================== REVIEW ROUTES ==================== //
 const {
   createReview,
   getReviewsByCarId,
   getTopRatedCars
 } = require('../Controllers/review.js');
 
-const router = express.Router();
+// Reviews
+router.post('/review', createReview);                   // Post a review
+router.get('/review/car/:carId', getReviewsByCarId);    // Get reviews for a specific car
+router.get('/top-rated', getTopRatedCars);              // Get top-rated vehicles, limit 6
 
-// Authentication routes
-router.get('/', verifyTokenfromCookies, handleGetLogin);
-router.post('/', handlePostLogin);
-router.get('/signup', handleGetSignUp);
-router.post('/signup', handlePostSignUp);
-router.get('/user', verifyTokenfromCookies, getUserDetails);
-// router.patch('/user', verifyTokenfromCookies, handleUpdateUser);
-router.get('/logout', logoutUser);
-
-// Image upload
-router.get('/categories', getAllCategory);
-router.post('/categorie', upload.array('images'), createCategory);
-router.put('/categorie/:id', upload.array('images'), updateCategory);
-router.delete('/categorie/:id', upload.array('images'), deleteCategory);
-router.post('/vehicle', upload.array('images', 5), createVehicle);
-router.get('/vehicle', getVehicles);
-router.get('/vehicle/:id', getVehicleById);
-router.put('/vehicle/:id', upload.array('images', 5), updateVehicle);
-router.delete('/vehicle/:id', deleteVehicle);
-
-// Get all bookings by carId
-router.get('/booking/car/:carId', handleGetBookingStatusByCarId);
-
-// Get all bookings by userId
-router.get('/booking/user/:userId', handleGetBookingStatusByUserId);
-
-// Get a single booking by bookingId
-router.get('/booking/:bookingId', handleGetBookingsStatusByBookingId);
-
-// Create a new booking
-router.post('/booking/', handleCreateBookingStatus);
-
-// Update booking by bookingId
-router.put('/booking/:bookingId', handleUpdateBookingStatus);
-
-// Delete booking by bookingId
-router.delete('/booking/:bookingId', handleDeleteBookingStatus);
-
-// Review
-router.post('/review', createReview);
-router.get('/review/car/:carId', getReviewsByCarId);
-router.get('/top-rated', getTopRatedCars);
-
-// 404 handler
+// ==================== 404 NOT FOUND HANDLER ==================== //
 router.use((req, res, next) => {
   res.status(404).json({
     status: false,

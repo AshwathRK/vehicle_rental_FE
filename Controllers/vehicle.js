@@ -1,6 +1,8 @@
-const { Vehicle, Category } = require('../Model/vehicle')
+const { Vehicle, Category } = require('../Model/vehicle');
 
-//Get All Category
+// ======================== CATEGORY CONTROLLERS ======================== //
+
+// Command: Get all categories with image conversion to base64
 const getAllCategory = async (req, res) => {
     try {
         const categories = await Category.find();
@@ -32,8 +34,7 @@ const getAllCategory = async (req, res) => {
     }
 };
 
-
-// Create category
+// Command: Create a new category with image upload
 const createCategory = async (req, res) => {
     try {
         const { category } = req.body;
@@ -59,7 +60,7 @@ const createCategory = async (req, res) => {
     }
 };
 
-// Update Category
+// Command: Update an existing category and its images
 const updateCategory = async (req, res) => {
     try {
         const { id } = req.params;
@@ -89,9 +90,7 @@ const updateCategory = async (req, res) => {
     }
 };
 
-
-//Delete category
-
+// Command: Delete a category by ID
 const deleteCategory = async (req, res) => {
     try {
         const { id } = req.params;
@@ -111,8 +110,9 @@ const deleteCategory = async (req, res) => {
     }
 };
 
+// ======================== VEHICLE CONTROLLERS ======================== //
 
-// CREATE a new vehicle
+// Command: Create a new vehicle with images and metadata
 const createVehicle = async (req, res) => {
     try {
         const {
@@ -199,7 +199,7 @@ const createVehicle = async (req, res) => {
     }
 };
 
-// READ all vehicles
+// Command: Get all vehicles
 const getVehicles = async (req, res) => {
     try {
         const vehicles = await Vehicle.find();
@@ -209,7 +209,7 @@ const getVehicles = async (req, res) => {
     }
 };
 
-// READ single vehicle
+// Command: Get vehicle details by ID
 const getVehicleById = async (req, res) => {
     try {
         const vehicle = await Vehicle.findById(req.params.id);
@@ -220,9 +220,30 @@ const getVehicleById = async (req, res) => {
     }
 };
 
-// UPDATE vehicle
+// Command: Get top 6 booked vehicles
+const getTopBookedVehicles = async (req, res) => {
+    try {
+        const topVehicles = await Vehicle.find()
+            .sort({ bookingCount: -1 }) // Descending order
+            .limit(6)
+            .populate('category') // Optional: populates category data
+            .select('-images'); // Optional: exclude image binary data
+
+        if (!topVehicles || topVehicles.length === 0) {
+            return res.status(404).json({ message: 'No vehicles found.' });
+        }
+
+        return res.status(200).json({
+            message: 'Top 6 booked vehicles fetched successfully.',
+            vehicles: topVehicles
+        });
+    } catch (error) {
+        return res.status(500).json({ message: `Error: ${error.message}` });
+    }
+};
+
+// Command: Update an existing vehicle by ID
 const updateVehicle = async (req, res) => {
-    debugger
     try {
         const vehicleId = req.params.id;
         const {
@@ -239,75 +260,87 @@ const updateVehicle = async (req, res) => {
             });
         }
 
-        // Check if license plate is being updated and if it already exists
-        if (licensePlate && licensePlate !== existingVehicle.licensePlate) {
-            const vehicleWithLicensePlate = await Vehicle.findOne({ licensePlate });
-            if (vehicleWithLicensePlate) {
-                return res.status(409).json({
-                    status: false,
-                    message: "Vehicle with this license plate already exists."
-                });
-            }
-        }
+        const updatedVehicleData = {};
 
-        // Update vehicle data
-        const updatedVehicleData = {
-            make: make || existingVehicle.make,
-            model: model || existingVehicle.model,
-            year: year || existingVehicle.year,
-            category: category || existingVehicle.category,
-            licensePlate: licensePlate || existingVehicle.licensePlate,
-            transmission: transmission || existingVehicle.transmission,
-            fuelType: fuelType || existingVehicle.fuelType,
-            mileage: req.body.mileage || existingVehicle.mileage,
-            seatingCapacity: req.body.seatingCapacity || existingVehicle.seatingCapacity,
-            numberOfDoors: req.body.numberOfDoors || existingVehicle.numberOfDoors,
-            airConditioning: req.body.airConditioning || existingVehicle.airConditioning,
-            luggageCapacity: req.body.luggageCapacity || existingVehicle.luggageCapacity,
-            pricePerDay: pricePerDay || existingVehicle.pricePerDay,
-            pricePerHour: req.body.pricePerHour || existingVehicle.pricePerHour,
-            deposit: req.body.deposit || existingVehicle.deposit,
-            discounts: req.body.discounts || existingVehicle.discounts,
-            fuelPolicy: req.body.fuelPolicy || existingVehicle.fuelPolicy,
-            location: {
-                pickup: location?.pickup || existingVehicle.location.pickup,
-                dropoff: location?.dropoff || existingVehicle.location.dropoff,
-                city: location?.city || existingVehicle.location.city
-            },
-            availability: {
-                isAvailable: availability?.isAvailable || existingVehicle.availability.isAvailable,
-                availableFrom: availability?.availableFrom || existingVehicle.availability.availableFrom,
-                availableTo: availability?.availableTo || existingVehicle.availability.availableTo,
-                bookingStatus: availability?.bookingStatus || existingVehicle.availability.bookingStatus
-            },
-            insurance: {
-                type: insurance?.type || existingVehicle.insurance.type,
-                provider: insurance?.provider || existingVehicle.insurance.provider,
-                expiryDate: insurance?.expiryDate || existingVehicle.insurance.expiryDate
-            },
-            driverRequirements: {
-                minAge: driverRequirements?.minAge || existingVehicle.driverRequirements.minAge,
-                licenseType: driverRequirements?.licenseType || existingVehicle.driverRequirements.licenseType
-            },
-            termsAndConditions: termsAndConditions || existingVehicle.termsAndConditions,
-            cancellationPolicy: cancellationPolicy || existingVehicle.cancellationPolicy,
-            maintenance: {
-                lastServiced: maintenance?.lastServiced || existingVehicle.maintenance.lastServiced,
-                nextServiceDue: maintenance?.nextServiceDue || existingVehicle.maintenance.nextServiceDue,
-                condition: maintenance?.condition || existingVehicle.maintenance.condition,
-                odometerReading: maintenance?.odometerReading || existingVehicle.maintenance.odometerReading
-            },
-            userId: userId || existingVehicle.userId,
-            isAdminApproved: req.body.isAdminApproved || existingVehicle.isAdminApproved
-        };
-
-        // Update images if provided
-        if (req.files) {
+        // Update image if provided
+        if (req.files && req.files.length > 0) {
             const imageBuffers = req.files.map(file => ({
                 data: file.buffer,
                 contentType: file.mimetype
             }));
             updatedVehicleData.images = imageBuffers;
+        }
+
+        // Update other fields if body contains them
+        if (Object.keys(req.body).length > 0) {
+            // License plate uniqueness check only if licensePlate is changing
+            if (licensePlate && licensePlate !== existingVehicle.licensePlate) {
+                const vehicleWithLicensePlate = await Vehicle.findOne({ licensePlate });
+                if (vehicleWithLicensePlate) {
+                    return res.status(409).json({
+                        status: false,
+                        message: "Vehicle with this license plate already exists."
+                    });
+                }
+            }
+
+            Object.assign(updatedVehicleData, {
+                make: make || existingVehicle.make,
+                model: model || existingVehicle.model,
+                year: year || existingVehicle.year,
+                category: category || existingVehicle.category,
+                licensePlate: licensePlate || existingVehicle.licensePlate,
+                transmission: transmission || existingVehicle.transmission,
+                fuelType: fuelType || existingVehicle.fuelType,
+                mileage: req.body.mileage || existingVehicle.mileage,
+                seatingCapacity: req.body.seatingCapacity || existingVehicle.seatingCapacity,
+                numberOfDoors: req.body.numberOfDoors || existingVehicle.numberOfDoors,
+                airConditioning: req.body.airConditioning || existingVehicle.airConditioning,
+                luggageCapacity: req.body.luggageCapacity || existingVehicle.luggageCapacity,
+                pricePerDay: pricePerDay || existingVehicle.pricePerDay,
+                pricePerHour: req.body.pricePerHour || existingVehicle.pricePerHour,
+                deposit: req.body.deposit || existingVehicle.deposit,
+                discounts: req.body.discounts || existingVehicle.discounts,
+                fuelPolicy: req.body.fuelPolicy || existingVehicle.fuelPolicy,
+                location: {
+                    pickup: location?.pickup || existingVehicle.location.pickup,
+                    dropoff: location?.dropoff || existingVehicle.location.dropoff,
+                    city: location?.city || existingVehicle.location.city
+                },
+                availability: {
+                    isAvailable: availability?.isAvailable ?? existingVehicle.availability.isAvailable,
+                    availableFrom: availability?.availableFrom || existingVehicle.availability.availableFrom,
+                    availableTo: availability?.availableTo || existingVehicle.availability.availableTo,
+                    bookingStatus: availability?.bookingStatus || existingVehicle.availability.bookingStatus
+                },
+                insurance: {
+                    type: insurance?.type || existingVehicle.insurance.type,
+                    provider: insurance?.provider || existingVehicle.insurance.provider,
+                    expiryDate: insurance?.expiryDate || existingVehicle.insurance.expiryDate
+                },
+                driverRequirements: {
+                    minAge: driverRequirements?.minAge || existingVehicle.driverRequirements.minAge,
+                    licenseType: driverRequirements?.licenseType || existingVehicle.driverRequirements.licenseType
+                },
+                termsAndConditions: termsAndConditions || existingVehicle.termsAndConditions,
+                cancellationPolicy: cancellationPolicy || existingVehicle.cancellationPolicy,
+                maintenance: {
+                    lastServiced: maintenance?.lastServiced || existingVehicle.maintenance.lastServiced,
+                    nextServiceDue: maintenance?.nextServiceDue || existingVehicle.maintenance.nextServiceDue,
+                    condition: maintenance?.condition || existingVehicle.maintenance.condition,
+                    odometerReading: maintenance?.odometerReading || existingVehicle.maintenance.odometerReading
+                },
+                userId: userId || existingVehicle.userId,
+                isAdminApproved: req.body.isAdminApproved ?? existingVehicle.isAdminApproved
+            });
+        }
+
+        // Update only if something to update
+        if (Object.keys(updatedVehicleData).length === 0) {
+            return res.status(400).json({
+                status: false,
+                message: "No valid data provided to update."
+            });
         }
 
         const updatedVehicle = await Vehicle.findByIdAndUpdate(vehicleId, updatedVehicleData, { new: true });
@@ -319,14 +352,14 @@ const updateVehicle = async (req, res) => {
 
     } catch (error) {
         console.error("Vehicle update error:", error);
-        return res.status(500).json({
+        return res.status(200).json({
             status: false,
-            message: "An internal server error occurred."
+            message: "Failed to update, but no critical error occurred."
         });
     }
 };
 
-// DELETE vehicle
+// Command: Delete a vehicle by ID
 const deleteVehicle = async (req, res) => {
     try {
         const deleted = await Vehicle.findByIdAndDelete(req.params.id);
@@ -337,7 +370,7 @@ const deleteVehicle = async (req, res) => {
     }
 };
 
-
+// Export all controllers
 module.exports = {
     getAllCategory,
     createCategory,
@@ -346,6 +379,7 @@ module.exports = {
     createVehicle,
     getVehicles,
     getVehicleById,
+    getTopBookedVehicles,
     updateVehicle,
     deleteVehicle
 };

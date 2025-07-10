@@ -25,3 +25,5 @@ const bookingSchema = new mongoose.Schema({
     default: 'Pending'
   }
 }, { timestamps: true });
+
+module.exports = mongoose.model('BookingStatus', bookingSchema);

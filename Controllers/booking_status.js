@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
-const BookingStatus = require('../Model/booking_status');
+const BookingStatus = require('../Model/booking_status')
+const {Vehicle} = require('../Model/vehicle')
 
 // Get by carId
 const handleGetBookingStatusByCarId = async (req, res) => {
@@ -54,46 +55,71 @@ const handleGetBookingsStatusByBookingId = async (req, res) => {
 
 // ✅ Create booking
 const handleCreateBookingStatus = async (req, res) => {
-    try {
-        const { carId, userId, startDateTime, endDateTime, status } = req.body;
+  try {
+    const { carId, userId, startDateTime, endDateTime, status } = req.body;
 
-        const booking = new BookingStatus({
-            carId,
-            userId,
-            startDateTime,
-            endDateTime,
-            status
-        });
+    const booking = new BookingStatus({
+      carId,
+      userId,
+      startDateTime,
+      endDateTime,
+      status
+    });
 
-        const savedBooking = await booking.save();
+    const savedBooking = await booking.save();
 
-        return res.status(201).json({ message: 'Booking created successfully!', data: savedBooking });
-    } catch (error) {
-        return res.status(500).json({ message: `Error: ${error.message}` });
+    if (status === "Confirmed") {
+      await Vehicle.findByIdAndUpdate(carId, { $inc: { bookingCount: 1 } }, { new: true });
     }
+
+    return res.status(201).json({ message: 'Booking created successfully!', data: savedBooking });
+  } catch (error) {
+    return res.status(500).json({ message: `Error: ${error.message}` });
+  }
 };
+
 
 // ✅ Update booking
 const handleUpdateBookingStatus = async (req, res) => {
-    const { bookingId } = req.params;
-    const updateData = req.body;
+  const { bookingId } = req.params;
+  const updateData = req.body;
 
-    try {
-        const updated = await BookingStatus.findByIdAndUpdate(
-            bookingId,
-            updateData,
-            { new: true }
-        );
-
-        if (!updated) {
-            return res.status(404).json({ message: 'Booking not found!' });
-        }
-
-        return res.status(200).json({ message: 'Booking updated successfully!', data: updated });
-    } catch (error) {
-        return res.status(500).json({ message: `Error: ${error.message}` });
+  try {
+    // Step 1: Get the existing booking
+    const existingBooking = await BookingStatus.findById(bookingId);
+    if (!existingBooking) {
+      return res.status(404).json({ message: 'Booking not found!' });
     }
+
+    // Step 2: Perform update
+    const updated = await BookingStatus.findByIdAndUpdate(
+      bookingId,
+      updateData,
+      { new: true }
+    );
+
+    // Step 3: Check if status changed to "Cancelled" from "Confirmed"
+    if (
+      updateData.status === 'Cancelled' &&
+      existingBooking.status === 'Confirmed'
+    ) {
+      await Vehicle.findByIdAndUpdate(
+        existingBooking.carId,
+        { $inc: { bookingCount: -1 } },
+        { new: true }
+      );
+    }
+
+    return res.status(200).json({
+      message: 'Booking updated successfully!',
+      data: updated
+    });
+
+  } catch (error) {
+    return res.status(500).json({ message: `Error: ${error.message}` });
+  }
 };
+
 
 // ✅ Delete booking
 const handleDeleteBookingStatus = async (req, res) => {
