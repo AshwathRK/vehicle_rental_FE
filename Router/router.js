@@ -79,7 +79,7 @@ router.put('/booking/:bookingId', handleUpdateBookingStatus);
 router.delete('/booking/:bookingId', handleDeleteBookingStatus);
 
 // Review
-router.post('/review/', createReview);
+router.post('/review', createReview);
 router.get('/review/car/:carId', getReviewsByCarId);
 router.get('/top-rated', getTopRatedCars);
 

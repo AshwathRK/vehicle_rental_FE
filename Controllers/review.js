@@ -6,13 +6,22 @@ const createReview = async (req, res) => {
     const { carId, userId, rating, comment } = req.body;
 
     try {
+        // Check if user already submitted a review for this car
+        const existingReview = await Review.findOne({ carId, userId });
+        if (existingReview) {
+            return res.status(400).json({ message: 'You have already submitted a review for this car.' });
+        }
+
+        // Create and save the new review
         const review = new Review({ carId, userId, rating, comment });
         await review.save();
+
         res.status(201).json({ message: 'Review submitted', data: review });
     } catch (error) {
         res.status(500).json({ message: `Error: ${error.message}` });
     }
 };
+
 
 // Get all reviews for a specific car
 const getReviewsByCarId = async (req, res) => {
@@ -39,7 +48,7 @@ const getTopRatedCars = async (req, res) => {
                 $sort: { averageRating: -1, reviewCount: -1 }
             },
             {
-                $limit: 5 // top 5 cars
+                $limit: 6 // top 6 cars
             },
             {
                 $lookup: {
