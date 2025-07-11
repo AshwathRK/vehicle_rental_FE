@@ -224,23 +224,70 @@ const getVehicleById = async (req, res) => {
 const getTopBookedVehicles = async (req, res) => {
     try {
         const topVehicles = await Vehicle.find()
-            .sort({ bookingCount: -1 }) // Descending order
-            .limit(6)
-            .populate('category') // Optional: populates category data
-            .select('-images'); // Optional: exclude image binary data
+            .sort({ bookingCount: -1 })
+            .limit(6);
 
         if (!topVehicles || topVehicles.length === 0) {
             return res.status(404).json({ message: 'No vehicles found.' });
         }
 
+        const formattedVehicles = topVehicles.map(vehicle => ({
+            _id: vehicle._id,
+            make: vehicle.make,
+            model: vehicle.model,
+            year: vehicle.year,
+            category: vehicle.category,
+            bookingCount: vehicle.bookingCount,
+            fuelType: vehicle.fuelType,
+            transmission: vehicle.transmission,
+            seatingCapacity: vehicle.seatingCapacity,
+            pricePerDay: vehicle.pricePerDay,
+            pricePerHour: vehicle.pricePerHour,
+            delivery: vehicle.delivery,
+            images: vehicle.images.map(img => ({
+                data: img.data.toString('base64'),
+                contentType: img.contentType
+            }))
+        }));
+
         return res.status(200).json({
             message: 'Top 6 booked vehicles fetched successfully.',
-            vehicles: topVehicles
+            vehicles: formattedVehicles
         });
     } catch (error) {
         return res.status(500).json({ message: `Error: ${error.message}` });
     }
 };
+
+// Command: Get low price vehicle
+const getLowPriceVehicle = async (req, res) => {
+    try {
+        const lowPrice = await Vehicle.aggregate([{
+            $group:
+            {
+                _id: {},
+                minPrice: { $min: "$pricePerHour" }, 
+                minPriceDay: { $min: "$pricePerDay" },
+                maxPrice:{$max: "$pricePerHour"},
+                maxPriceDay: { $max: "$pricePerDay" },
+            }
+        }])
+
+        if (lowPrice.length===0){
+            return res.status(404).json({
+                message: "No data found!"
+            })
+        }
+
+        return res.status(200).json({
+            message: "The data fetched successfully",
+            lowPrice
+        })
+
+    } catch (error) {
+        return res.status(500).json({ message: `Error: ${error.message}` });
+    }
+}
 
 // Command: Update an existing vehicle by ID
 const updateVehicle = async (req, res) => {
@@ -380,6 +427,7 @@ module.exports = {
     getVehicles,
     getVehicleById,
     getTopBookedVehicles,
+    getLowPriceVehicle,
     updateVehicle,
     deleteVehicle
 };

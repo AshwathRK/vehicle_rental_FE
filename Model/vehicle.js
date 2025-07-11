@@ -86,6 +86,10 @@ const vehicleSchema = new mongoose.Schema({
     },
     odometerReading: { type: Number }
   },
+  delivery:{
+    type: Boolean,
+    default: true
+  },
 
   // Ownership and Admin Approval
   userId: {
