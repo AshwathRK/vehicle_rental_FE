@@ -1,7 +1,6 @@
 const { verifyAccessToken } = require('../utill');
 
 const verifyTokenfromCookies = (req, res, next) => {
-    
     if (req.method === 'OPTIONS') {
         return res.sendStatus(204);
     }
@@ -21,7 +20,7 @@ const verifyTokenfromCookies = (req, res, next) => {
         }
 
         req.user = userPayload;
-        console.log(userPayload)
+        // console.log(userPayload)
         return next();
     } catch (error) {
         // Optionally clear the cookie if it's invalid

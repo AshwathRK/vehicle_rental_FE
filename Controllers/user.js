@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken');
 
 const handleGetLogin = async (req, res, next) => {
     try {
+        // debugger
         if (!req.user || !req.user.email) {
             return res.status(401).json({ status: false, message: "Unauthorized access" });
         }
