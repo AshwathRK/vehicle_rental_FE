@@ -1,7 +1,6 @@
 const { verifyAccessToken } = require('../utill');
 
 const verifyTokenfromCookies = (req, res, next) => {
-    debugger
     if (req.method === 'OPTIONS') {
         return res.sendStatus(204);
     }

@@ -223,7 +223,7 @@ const getVehicleById = async (req, res) => {
 // Command: Get top 6 booked vehicles
 const getTopBookedVehicles = async (req, res) => {
     try {
-        const topVehicles = await Vehicle.find()
+        const topVehicles = await Vehicle.find({isAdminApproved:true})
             .sort({ bookingCount: -1 })
             .limit(6);
 
