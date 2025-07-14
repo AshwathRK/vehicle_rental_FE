@@ -33,6 +33,7 @@ const handleGetLogin = async (req, res, next) => {
 
 const handlePostLogin = async (req, res, next) => {
     const deviceId = uuidv4();
+    // debugger
     try {
         const { email, password } = req.body;
 
@@ -66,31 +67,14 @@ const handlePostLogin = async (req, res, next) => {
         );
 
         // console.log(req.cookie)
-        return res
-            .status(200)
-            .cookie('accessToken', accessToken, {
-                httpOnly: true,
-                secure: true,
-                sameSite: 'None',
-                maxAge: 15 * 60 * 1000,
-            })
-            .cookie('refreshToken', refreshToken, {
-                httpOnly: true,
-                secure: true,
-                sameSite: 'None',
-                maxAge: 7 * 24 * 60 * 60 * 1000,
-            })
-            .cookie('deviceId', deviceId, {
-                httpOnly: false,
-                secure: true,
-                sameSite: 'None',
-                maxAge: 7 * 24 * 60 * 60 * 1000,
-            })
-            .json({
-                status: true,
-                message: "The user logged in successfully",
-                user
-            });
+        return res.status(200).json({
+            status: true,
+            message: "The user logged in successfully",
+            user,
+            accessToken,
+            refreshToken,
+            deviceId
+        });
 
 
     } catch (error) {
