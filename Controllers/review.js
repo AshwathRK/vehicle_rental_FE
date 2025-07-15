@@ -1,27 +1,49 @@
 const Review = require('../Model/review');
-const Vehicle = require('../Model/vehicle');
+const {Vehicle} = require('../Model/vehicle');
 
-// Create a review
+// Create a review and update averageRating on the vehicle
 const createReview = async (req, res) => {
     const { carId, userId, rating, comment } = req.body;
 
     try {
-        // Check if user already submitted a review for this car
+        // Prevent duplicate reviews from same user
         const existingReview = await Review.findOne({ carId, userId });
         if (existingReview) {
             return res.status(400).json({ message: 'You have already submitted a review for this car.' });
         }
 
-        // Create and save the new review
+        // Create and save new review
         const review = new Review({ carId, userId, rating, comment });
         await review.save();
 
+        // Recalculate average rating and review count
+        const ratingStats = await Review.aggregate([
+            { $match: { carId: review.carId } },
+            {
+                $group: {
+                    _id: '$carId',
+                    averageRating: { $avg: '$rating' },
+                    reviewCount: { $sum: 1 }
+                }
+            }
+        ]);
+
+        const { averageRating, reviewCount } = ratingStats[0] || { averageRating: 0, reviewCount: 0 };
+
+        // Update Vehicle model with new rating info
+        await Vehicle.findByIdAndUpdate(
+            carId,
+            { averageRating, reviewCount },
+            { new: true }
+        );
+
         res.status(201).json({ message: 'Review submitted', data: review });
+
     } catch (error) {
+        console.error('Error creating review:', error);
         res.status(500).json({ message: `Error: ${error.message}` });
     }
 };
-
 
 // Get all reviews for a specific car
 const getReviewsByCarId = async (req, res) => {

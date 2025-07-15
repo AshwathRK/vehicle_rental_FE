@@ -6,7 +6,7 @@ const CategorySchema = new mongoose.Schema({
     type: String,
     // enum: ['Sedan', 'Coupe', 'SUV', 'Convertible', 'Wagon', 'Crossover', 'Hatchback', 'Minivan'],
     required: true,
-    unique:true
+    unique: true
   },
   images: [
     {
@@ -86,7 +86,7 @@ const vehicleSchema = new mongoose.Schema({
     },
     odometerReading: { type: Number }
   },
-  delivery:{
+  delivery: {
     type: Boolean,
     default: true
   },
@@ -105,7 +105,9 @@ const vehicleSchema = new mongoose.Schema({
   bookingCount: {
     type: Number,
     default: 0
-  }
+  },
+  averageRating: { type: Number, default: 0 },
+  reviewCount: { type: Number, default: 0 },
 
 }, { timestamps: true });
 

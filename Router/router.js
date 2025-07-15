@@ -34,6 +34,7 @@ const {
   createVehicle,
   getVehicles,
   getVehicleById,
+  getVehicleByFilter,
   getTopBookedVehicles,
   getLowPriceVehicle,
   updateVehicle,
@@ -52,6 +53,7 @@ router.post('/vehicle', upload.array('images', 5), createVehicle);  // Create ve
 router.get('/vehicle', getVehicles);                                // Get all vehicles
 router.get('/vehicle/:id', getVehicleById);                         // Get vehicle by ID
 router.get('/topbooking', getTopBookedVehicles);                    // Get most booked vehicles / limit 6
+router.get('/filtervehicles', getVehicleByFilter)
 router.get('/startfrom', getLowPriceVehicle);                       // Get low price vehicle
 router.put('/vehicle/:id', upload.array('images', 5), updateVehicle); // Update vehicle
 router.delete('/vehicle/:id', deleteVehicle);                       // Delete vehicle

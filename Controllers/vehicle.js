@@ -220,10 +220,171 @@ const getVehicleById = async (req, res) => {
     }
 };
 
+// Command: Get the vehicles based on the filter
+const getVehicleByFilter = async (req, res) => {
+    // debugger
+    try {
+        const filterString = req.header('filter') || '{}';
+        const search = req.header('search') || '';
+        const pricerange = req.header('pricerange') || '';
+
+        const filters = JSON.parse(filterString);
+
+        const hasAnyFilters =
+            (filters.categories && Object.values(filters.categories).filter(Boolean).length) ||
+            (filters.transmission && Object.values(filters.transmission).filter(Boolean).length) ||
+            (filters.fuelType && Object.values(filters.fuelType).filter(Boolean).length) ||
+            (filters.seats && Object.values(filters.seats).filter(Boolean).length) ||
+            (filters.userRatings && Object.values(filters.userRatings).filter(Boolean).length) ||
+            search ||
+            pricerange;
+
+        const query = {
+            isAdminApproved: true
+        };
+
+        if (hasAnyFilters) {
+            // 🔘 Price Range
+            if (pricerange) {
+                const priceRange = pricerange.split(',').map(Number);
+                query.pricePerDay = { $gte: priceRange[0], $lte: priceRange[1] };
+            }
+
+            // 🔘 Category (convert names to IDs)
+            if (filters.categories) {
+                const categoryNames = Object.values(filters.categories).filter(Boolean);
+                if (categoryNames.length) {
+                    const categoryDocs = await Category.find(
+                        { category: { $in: categoryNames } },
+                        { _id: 1 }
+                    );
+                    const categoryIds = categoryDocs.map(doc => doc._id);
+                    if (categoryIds.length) query.category = { $in: categoryIds };
+                }
+            }
+
+            // 🔘 Transmission
+            if (filters.transmission) {
+                const values = Object.keys(filters.transmission)
+                    .filter(key => filters.transmission[key])
+                    .map(str => str.charAt(0).toUpperCase() + str.slice(1)); // Capitalize
+                if (values.length) query.transmission = { $in: values };
+            }
+
+            // 🔘 Fuel Type
+            if (filters.fuelType) {
+                const values = Object.keys(filters.fuelType)
+                    .filter(key => filters.fuelType[key])
+                    .map(str => str.charAt(0).toUpperCase() + str.slice(1));
+                if (values.length) query.fuelType = { $in: values };
+            }
+
+            // 🔘 Seats
+            if (filters.seats) {
+                const selectedSeatLabels = Object.keys(filters.seats)
+                    .filter(key => filters.seats[key]); // e.g. ['FourSeats', 'SixSeats']
+
+                let seatRange = [];
+
+                selectedSeatLabels.forEach(label => {
+                    switch (label) {
+                        case 'fourSeats':
+                            seatRange.push(4, 5);
+                            break;
+                        case 'sixSeats':
+                            seatRange.push(6, 7);
+                            break;
+                        case 'eightSeats':
+                            seatRange.push(8, 9);
+                            break;
+                        // Add more cases if needed
+                        default:
+                            break;
+                    }
+                });
+
+                // Remove duplicates and apply filter
+                seatRange = [...new Set(seatRange)];
+                if (seatRange.length) query.seatingCapacity = { $in: seatRange };
+            }
+
+
+            // 🔘 User Ratings
+            if (filters.userRatings) {
+                const selectedRatings = Object.keys(filters.userRatings)
+                    .filter(key => filters.userRatings[key]); // e.g. ['fourRated']
+
+                let minRating = 0;
+
+                selectedRatings.forEach(label => {
+                    switch (label.toLowerCase()) {
+                        case 'fourfiverated':
+                            minRating = Math.max(minRating, 4.5);
+                            break;
+                        case 'fourrated':
+                            minRating = Math.max(minRating, 4.0);
+                            break;
+                        case 'threeeightrated':
+                            minRating = Math.max(minRating, 3.8);
+                            break;
+                        case 'threefiverated':
+                            minRating = Math.max(minRating, 3.5);
+                            break;
+                        case 'allrated':
+                            minRating = 0; // No filtering
+                            break;
+                        default:
+                            break;
+                    }
+                });
+
+                if (minRating > 0) {
+                    query.averageRating = { $gte: minRating };
+                }
+            }
+
+
+            // 🔍 Search
+            if (search) {
+                query.$or = [
+                    { make: { $regex: search, $options: 'i' } },
+                    { model: { $regex: search, $options: 'i' } },
+                    { licensePlate: { $regex: search, $options: 'i' } }
+                ];
+            }
+        }
+
+        const vehicles = await Vehicle.find(query);
+        const formatted = vehicles.map(vehicle => ({
+            _id: vehicle._id,
+            make: vehicle.make,
+            model:vehicle.model,
+            year:vehicle.year,
+            transmission:vehicle.transmission,
+            fuelType:vehicle.fuelType,
+            pricePerDay:vehicle.pricePerDay,
+            pricePerHour:vehicle.pricePerHour,
+            bookingCount:vehicle.bookingCount,
+            averageRating:vehicle.averageRating,
+            reviewCount:vehicle.reviewCount,
+            images: [vehicle.images.map(img => {
+                const base64 = img.data.toString('base64');
+                return `data:${img.contentType};base64,${base64}`;
+            })]
+
+        }))
+        res.status(200).json(formatted);
+
+    } catch (error) {
+        console.error('Error fetching filtered vehicles:', error);
+        res.status(500).json({ error: 'Something went wrong while fetching vehicles.' });
+    }
+};
+
 // Command: Get top 6 booked vehicles
 const getTopBookedVehicles = async (req, res) => {
     try {
-        const topVehicles = await Vehicle.find({isAdminApproved:true})
+        const topVehicles = await Vehicle.find({ isAdminApproved: true })
             .sort({ bookingCount: -1 })
             .limit(6);
 
@@ -266,14 +427,14 @@ const getLowPriceVehicle = async (req, res) => {
             $group:
             {
                 _id: {},
-                minPrice: { $min: "$pricePerHour" }, 
+                minPrice: { $min: "$pricePerHour" },
                 minPriceDay: { $min: "$pricePerDay" },
-                maxPrice:{$max: "$pricePerHour"},
+                maxPrice: { $max: "$pricePerHour" },
                 maxPriceDay: { $max: "$pricePerDay" },
             }
         }])
 
-        if (lowPrice.length===0){
+        if (lowPrice.length === 0) {
             return res.status(404).json({
                 message: "No data found!"
             })
@@ -426,6 +587,7 @@ module.exports = {
     createVehicle,
     getVehicles,
     getVehicleById,
+    getVehicleByFilter,
     getTopBookedVehicles,
     getLowPriceVehicle,
     updateVehicle,
