@@ -12,7 +12,7 @@ const handleGetLogin = async (req, res, next) => {
         }
 
         const user = await User.findOne({ email: req.user.email }).select("-password");
-
+        
         if (!user) {
             return res.status(404).json({ status: false, message: "User not found" });
         }

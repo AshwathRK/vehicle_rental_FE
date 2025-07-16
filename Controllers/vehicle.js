@@ -13,7 +13,9 @@ const getAllCategory = async (req, res) => {
             });
         }
 
+
         // Convert image buffer to base64
+        // console.log(categories)
         const formatted = categories.map(cat => ({
             _id: cat._id,
             category: cat.category,
@@ -23,6 +25,7 @@ const getAllCategory = async (req, res) => {
             })
         }));
 
+        // console.log(formatted)
         return res.status(200).json({
             message: 'Category fetched successfully',
             responce: formatted
@@ -354,25 +357,31 @@ const getVehicleByFilter = async (req, res) => {
             }
         }
 
+
+
         const vehicles = await Vehicle.find(query);
+        // console.log(vehicles.images)
         const formatted = vehicles.map(vehicle => ({
             _id: vehicle._id,
             make: vehicle.make,
-            model:vehicle.model,
-            year:vehicle.year,
-            transmission:vehicle.transmission,
-            fuelType:vehicle.fuelType,
-            pricePerDay:vehicle.pricePerDay,
-            pricePerHour:vehicle.pricePerHour,
-            bookingCount:vehicle.bookingCount,
-            averageRating:vehicle.averageRating,
-            reviewCount:vehicle.reviewCount,
-            images: [vehicle.images.map(img => {
-                const base64 = img.data.toString('base64');
-                return `data:${img.contentType};base64,${base64}`;
-            })]
+            model: vehicle.model,
+            year: vehicle.year,
+            transmission: vehicle.transmission,
+            fuelType: vehicle.fuelType,
+            pricePerDay: vehicle.pricePerDay,
+            pricePerHour: vehicle.pricePerHour,
+            bookingCount: vehicle.bookingCount,
+            averageRating: vehicle.averageRating,
+            reviewCount: vehicle.reviewCount,
+            images: vehicle.images.map(img => {
+                return {
+                    contentType: img.contentType,
+                    data: img.data.toString('base64')
+                };
+            })
 
         }))
+        // console.log(formatted)
         res.status(200).json(formatted);
 
     } catch (error) {
