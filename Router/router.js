@@ -25,6 +25,14 @@ router.get('/user', verifyTokenfromCookies, getUserDetails);   // Get logged-in 
 // router.patch('/user', verifyTokenfromCookies, handleUpdateUser); // (Optional) Update user
 router.get('/logout', logoutUser);                             // Logout and clear token
 
+
+//===================== Verify Email ======================= //
+
+const {sendResetOtp, verifyOtp, resetPassword} = require('../Controllers/verifyEmail.js')
+
+router.post('/sendotp', sendResetOtp);
+router.post('/verifyotp', verifyOtp);
+
 // ==================== CATEGORY ROUTES ==================== //
 const {
   getAllCategory,
