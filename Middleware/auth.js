@@ -5,7 +5,6 @@ const verifyTokenfromCookies = (req, res, next) => {
         return res.sendStatus(204);
     }
     const token = req.header('Authorization').replace('Bearer ', '');
-    // const token = req.cookies.accessToken;
 
     if (!token) {
         return next(); // Proceed without user if no token

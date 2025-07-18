@@ -8,6 +8,8 @@ const router = require('./Router/router');
 
 const HTTP_Server = express();
 
+const ALLOWED_URL = process.env.ALLOWED_URL;
+
 // ✅ Parse JSON and URL-encoded data
 HTTP_Server.use(express.json());
 HTTP_Server.use(express.urlencoded({ extended: true }));
@@ -17,7 +19,7 @@ HTTP_Server.use(cookieParser());
 
 // ✅ Enable CORS for both localhost and Netlify
 const allowedOrigins = [
-    'http://localhost:5173'
+    ALLOWED_URL
 ];
 
 const corsOptions = {
