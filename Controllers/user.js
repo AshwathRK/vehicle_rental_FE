@@ -5,6 +5,7 @@ const { v4: uuidv4 } = require('uuid');
 const jwt = require('jsonwebtoken');
 
 const handleGetLogin = async (req, res, next) => {
+    debugger
     try {
         // debugger
         if (!req.user || !req.user.email) {
@@ -12,14 +13,33 @@ const handleGetLogin = async (req, res, next) => {
         }
 
         const user = await User.findOne({ email: req.user.email }).select("-password");
-        
+
         if (!user) {
             return res.status(404).json({ status: false, message: "User not found" });
         }
+
+        const formatted = {
+            _id: user._id,
+            fullname: user.fullname,
+            email: user.email,
+            dateofbirth: user.dateofbirth,
+            isAdmin: user.isAdmin,
+            isEmailVerified: user.isEmailVerified,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            phone: user.phone,
+            secondary: user.secondary,
+            website: user.website,
+            profile: user.profile.map(img => {
+                const base64 = img.data.toString('base64');
+                return `data:${img.contentType};base64,${base64}`;
+            })
+        };
+
         return res.status(200).json({
             status: true,
             message: "User authenticated",
-            user,
+            user: formatted,
         });
     } catch (error) {
         console.error("Error in getUserDetails:", error);
@@ -197,59 +217,113 @@ const getUserDetails = async (req, res) => {
     }
 };
 
-// const handleUpdateUser = async (req, res, next) => {
-//     try {
-//         const userId = req.user.id; // Assuming you have user authentication middleware
-//         const {
-//             fullname, phonenumber, dateofbirth, gender, streetaddress, city, State, Postal, Country
-//         } = req.body;
+const handleUpdateUser = async (req, res, next) => {
+    try {
+        // console.log(req.user)
+        const userId = req.user.uID; // Assuming you have user authentication middleware
+        console.log(req.body)
+        const {
+            fullname, firstName, lastName, phone, secondary, website, dateofbirth, gender, streetaddress, city, State, Postal, Country
+        } = req.body;
 
-//         const user = await User.findById(userId);
-//         if (!user) {
-//             return res.status(404).json({
-//                 status: false,
-//                 message: "User not found."
-//             });
-//         }
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({
+                status: false,
+                message: "User not found."
+            });
+        }
 
-//         // Update user fields
-//         user.fullname = fullname || user.fullname;
-//         user.phonenumber = phonenumber || user.phonenumber;
-//         user.dateofbirth = dateofbirth ? new Date(dateofbirth) : user.dateofbirth;
-//         user.gender = gender || user.gender;
-//         user.streetaddress = streetaddress || user.streetaddress;
-//         user.city = city || user.city;
-//         user.State = State || user.State;
-//         user.Postal = Postal || user.Postal;
-//         user.Country = Country || user.Country;
+        // Update user fields
+        user.fullname = fullname || user.fullname;
+        user.firstName = firstName || user.firstName;
+        user.lastName = lastName || user.lastName;
+        user.phone = phone || user.phone;
+        user.secondary = secondary || user.secondary;
+        user.website = website || user.website;
+        user.dateofbirth = dateofbirth ? new Date(dateofbirth) : user.dateofbirth;
+        user.gender = gender || user.gender;
+        user.streetaddress = streetaddress || user.streetaddress;
+        user.city = city || user.city;
+        user.State = State || user.State;
+        user.Postal = Postal || user.Postal;
+        user.Country = Country || user.Country;
 
-//         await user.save();
+        await user.save();
 
-//         return res.status(200).json({
-//             status: true,
-//             message: "User updated successfully.",
-//             user: {
-//                 fullname: user.fullname,
-//                 email: user.email,
-//                 phonenumber: user.phonenumber,
-//                 dateofbirth: user.dateofbirth,
-//                 gender: user.gender,
-//                 streetaddress: user.streetaddress,
-//                 city: user.city,
-//                 State: user.State,
-//                 Postal: user.Postal,
-//                 Country: user.Country
-//             }
-//         });
+        return res.status(200).json({
+            status: true,
+            message: "User updated successfully.",
+            user: {
+                fullname: user.fullname,
+                email: user.email,
+                phonenumber: user.phonenumber,
+                dateofbirth: user.dateofbirth,
+                gender: user.gender,
+                streetaddress: user.streetaddress,
+                city: user.city,
+                State: user.State,
+                Postal: user.Postal,
+                Country: user.Country
+            }
+        });
 
-//     } catch (error) {
-//         console.error("Update user error:", error);
-//         return res.status(500).json({
-//             status: false,
-//             message: "An internal server error occurred."
-//         });
-//     }
-// };
+    } catch (error) {
+        console.error("Update user error:", error);
+        return res.status(500).json({
+            status: false,
+            message: "An internal server error occurred."
+        });
+    }
+};
+
+const updateProfileImage = async (req, res) => {
+    debugger
+    try {
+        const userId = req.user.uID;
+
+        // Ensure file is provided
+        if (!req.file) {
+            return res.status(400).json({
+                status: false,
+                message: "No file provided",
+            });
+        }
+
+        // Prepare image data
+        const imageBuffer = {
+            data: req.file.buffer,
+            contentType: req.file.mimetype
+        };
+
+        // Update user profile with image
+        const imageUpdate = await User.findByIdAndUpdate(
+            userId,
+            { profile: imageBuffer },
+            { new: true }
+        );
+
+        if (!imageUpdate) {
+            return res.status(404).json({
+                status: false,
+                message: "User not found",
+            });
+        }
+
+        return res.status(200).json({
+            status: true,
+            message: "Image updated successfully",
+            data: imageUpdate.profile // Optional: return updated profile image
+        });
+    } catch (error) {
+        console.error("Error updating profile image:", error);
+        return res.status(500).json({
+            status: false,
+            message: "Server error while updating profile image",
+        });
+    }
+};
+
 
 const logoutUser = (req, res, next) => {
     res.clearCookie('accessToken');
@@ -264,5 +338,5 @@ const logoutUser = (req, res, next) => {
 }
 
 module.exports = {
-    handleGetLogin, handlePostLogin, handleGetSignUp, handlePostSignUp, getUserDetails, logoutUser
+    handleGetLogin, handlePostLogin, handleGetSignUp, handlePostSignUp, handleUpdateUser, updateProfileImage, getUserDetails, logoutUser
 };

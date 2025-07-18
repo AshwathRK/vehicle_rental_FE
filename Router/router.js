@@ -12,7 +12,8 @@ const {
   handlePostLogin,
   handlePostSignUp,
   getUserDetails,
-  // handleUpdateUser,
+  handleUpdateUser,
+  updateProfileImage,
   logoutUser
 } = require('../Controllers/user');
 
@@ -22,7 +23,8 @@ router.post('/', handlePostLogin);                             // Login user
 router.get('/signup', handleGetSignUp);                        // Get signup page
 router.post('/signup', handlePostSignUp);                      // Register new user
 router.get('/user', verifyTokenfromCookies, getUserDetails);   // Get logged-in user details
-// router.patch('/user', verifyTokenfromCookies, handleUpdateUser); // (Optional) Update user
+router.put('/user/:userId', verifyTokenfromCookies, handleUpdateUser); // (Optional) Update user
+router.put('/updateprofile/:userID', verifyTokenfromCookies, upload.single('profile'), updateProfileImage )
 router.get('/logout', logoutUser);                             // Logout and clear token
 
 
@@ -32,6 +34,7 @@ const {sendResetOtp, verifyOtp, resetPassword} = require('../Controllers/verifyE
 
 router.post('/sendotp', sendResetOtp);
 router.post('/verifyotp', verifyOtp);
+router.put('/updatepassword/:userId', resetPassword);
 
 // ==================== CATEGORY ROUTES ==================== //
 const {

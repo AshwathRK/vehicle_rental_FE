@@ -12,10 +12,7 @@ const getAllCategory = async (req, res) => {
                 message: 'No data found!'
             });
         }
-
-
-        // Convert image buffer to base64
-        // console.log(categories)
+        
         const formatted = categories.map(cat => ({
             _id: cat._id,
             category: cat.category,

@@ -16,9 +16,8 @@ const transporter = nodemailer.createTransport({
 
 // 1. Send OTP to user's email
 const sendResetOtp = async (req, res) => {
-    debugger
     try {
-        const  emailKey  = req.body;
+        const emailKey = req.body;
         const email = Object.keys(emailKey)[0]
         // Check if user exists
         const user = await User.findOne({ email });
@@ -89,28 +88,25 @@ const verifyOtp = async (req, res) => {
 // 3. Reset Password
 
 const resetPassword = async (req, res) => {
+    // debugger
     try {
-        const { email, password, confirmPassword } = req.body;
+        const { email, passwordData } = req.body;
 
-        if (
-            password.length < 12 ||
-            password.length > 14 ||
-            !/[A-Z]/.test(password) ||
-            !/[^a-zA-Z0-9]/.test(password)
-        ) {
-            return res.status(422).json({
-                msg: "Password must be 12-14 characters long, include one uppercase letter and one special character."
-            });
-        }
+        const { oldPassword, newPassword } = passwordData
+        console.log(req.body)
 
-        if (password !== confirmPassword) {
-            return res.status(400).json({ msg: "Passwords do not match" });
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
 
         const user = await User.findOne({ email });
         if (!user) return res.status(404).json({ msg: "User not found" });
+
+        const isMatch = await bcrypt.compare(oldPassword, user.password);
+        if (!isMatch) {
+            return res.status(401).json({
+                status: false,
+                message: "Old password is wrong!"
+            })
+        }
 
         user.password = hashedPassword;
         await user.save();

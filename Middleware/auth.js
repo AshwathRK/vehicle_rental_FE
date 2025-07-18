@@ -13,7 +13,6 @@ const verifyTokenfromCookies = (req, res, next) => {
 
     try {
         const userPayload = verifyAccessToken(token);
-        // const expectedDeviceId = req.cookies.deviceId;
         const expectedDeviceId = req.header('Device-Id');
 
         // ✅ Fix: use `userPayload` instead of undefined `payload`
@@ -22,7 +21,6 @@ const verifyTokenfromCookies = (req, res, next) => {
         }
 
         req.user = userPayload;
-        // console.log(userPayload)
         return next();
     } catch (error) {
         // Optionally clear the cookie if it's invalid
