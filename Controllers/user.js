@@ -1,13 +1,12 @@
 const User = require('../Model/user');
 const bcrypt = require('bcrypt');
-const { generateTokens, verifyRefreshToken } = require('../utill')
+const { generateTokens } = require('../utill')
 const { v4: uuidv4 } = require('uuid');
 const jwt = require('jsonwebtoken');
 
 const handleGetLogin = async (req, res, next) => {
-    debugger
+    // debugger
     try {
-        // debugger
         if (!req.user || !req.user.email) {
             return res.status(401).json({ status: false, message: "Unauthorized access" });
         }
@@ -18,16 +17,20 @@ const handleGetLogin = async (req, res, next) => {
             return res.status(404).json({ status: false, message: "User not found" });
         }
 
+        // console.log(user.)
+
         const formatted = {
             _id: user._id,
             fullname: user.fullname,
             email: user.email,
             dateofbirth: user.dateofbirth,
-            isAdmin: user.isAdmin,
+            profileType: user.profileType,
             isEmailVerified: user.isEmailVerified,
             firstName: user.firstName,
             lastName: user.lastName,
             phone: user.phone,
+            gender: user.gender,
+            dateofbirth: user.dateofbirth,
             secondary: user.secondary,
             website: user.website,
             profile: user.profile.map(img => {
@@ -218,12 +221,14 @@ const getUserDetails = async (req, res) => {
 };
 
 const handleUpdateUser = async (req, res, next) => {
+    debugger
     try {
         // console.log(req.user)
-        const userId = req.user.uID; // Assuming you have user authentication middleware
-        console.log(req.body)
+        const userId = req.user.uID;
+        // console.log(req.body)
         const {
-            fullname, firstName, lastName, phone, secondary, website, dateofbirth, gender, streetaddress, city, State, Postal, Country
+            fullname, firstName, lastName, phone, secondary, website, dateofbirth, gender, address, city, state, postal, country, accountnumber,
+            ifsc, accountholder, bankname
         } = req.body;
 
         const user = await User.findById(userId);
@@ -243,11 +248,22 @@ const handleUpdateUser = async (req, res, next) => {
         user.website = website || user.website;
         user.dateofbirth = dateofbirth ? new Date(dateofbirth) : user.dateofbirth;
         user.gender = gender || user.gender;
-        user.streetaddress = streetaddress || user.streetaddress;
+        user.address = address || user.address;
         user.city = city || user.city;
-        user.State = State || user.State;
-        user.Postal = Postal || user.Postal;
-        user.Country = Country || user.Country;
+        user.state = state || user.state;
+        user.postal = postal || user.postal;
+        user.country = country || user.country;
+        user.accountnumber = accountnumber || user.accountnumber;
+        user.ifsc = ifsc || user.ifsc;
+        user.accountholder = accountholder || user.accountholder;
+        user.bankname = bankname || user.bankname;
+
+        console.log('accountnumber:', accountnumber, 'typeof:', typeof accountnumber);
+
+        if (accountnumber !== undefined && accountnumber !== null) {
+            user.profileType = 'Affiliate';
+        }
+
 
         await user.save();
 
@@ -260,11 +276,12 @@ const handleUpdateUser = async (req, res, next) => {
                 phonenumber: user.phonenumber,
                 dateofbirth: user.dateofbirth,
                 gender: user.gender,
-                streetaddress: user.streetaddress,
+                profileType: user.profileType,
+                address: user.address,
                 city: user.city,
-                State: user.State,
-                Postal: user.Postal,
-                Country: user.Country
+                State: user.state,
+                Postal: user.postal,
+                Country: user.country
             }
         });
 

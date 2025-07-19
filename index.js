@@ -19,7 +19,7 @@ HTTP_Server.use(cookieParser());
 
 // ✅ Enable CORS for both localhost and Netlify
 const allowedOrigins = [
-    'https://vehiclerentzone.netlify.app'
+    'https://vehiclerentzone.netlify.app', 'http://localhost:5173'
 ];
 
 const corsOptions = {

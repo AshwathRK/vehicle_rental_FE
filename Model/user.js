@@ -22,10 +22,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    phone:{
+    phone: {
         type: Number,
     },
-    secondary:{
+    secondary: {
         type: Number,
     },
     website: {
@@ -33,11 +33,11 @@ const userSchema = new mongoose.Schema({
     },
 
     profile: [
-    {
-      data: Buffer,
-      contentType: String
-    }
-  ],
+        {
+            data: Buffer,
+            contentType: String
+        }
+    ],
 
     //Affiliate
     dateofbirth: {
@@ -47,25 +47,45 @@ const userSchema = new mongoose.Schema({
     gender: {
         type: String,
     },
-    streetaddress:{
-        type : String
+    address: {
+        type: String
     },
-    city:{
-        type : String
+    city: {
+        type: String
     },
-    State:{
-        type : String
+    state: {
+        type: String
     },
-    Postal:{
-        type : String
+    postal: {
+        type: String
     },
-    Country:{
-        type : String
+    country: {
+        type: String
+    },
+
+    // bank details 
+
+    accountnumber: {
+        type: Number
+    },
+    ifsc: {
+        type: String
+    },
+    accountholder: {
+        type: String
+    },
+    bankname: {
+        type: String
     },
     isEmailVerified: {
-    type: Boolean,
-    default: false
-  },
+        type: Boolean,
+        default: false
+    },
+    profileType:{
+        type: String,
+        enum: ['Admin', 'Affiliate', 'User'],
+        default:'User'
+    }
 
 }, { timestamps: true });
 // Create the User model from the schema
