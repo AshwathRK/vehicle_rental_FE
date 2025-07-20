@@ -14,6 +14,7 @@ const {
   getUserDetails,
   handleUpdateUser,
   updateProfileImage,
+  getAllAffiliateUsersWithCar,
   logoutUser
 } = require('../Controllers/user');
 
@@ -25,6 +26,7 @@ router.post('/signup', handlePostSignUp);                      // Register new u
 router.get('/user', verifyTokenfromCookies, getUserDetails);   // Get logged-in user details
 router.put('/user/:userId', verifyTokenfromCookies, handleUpdateUser); // (Optional) Update user
 router.put('/updateprofile/:userID', verifyTokenfromCookies, upload.single('profile'), updateProfileImage )
+router.get('/getaffiliate', getAllAffiliateUsersWithCar)
 router.get('/logout', logoutUser);                             // Logout and clear token
 
 
@@ -43,11 +45,13 @@ const {
   updateCategory,
   deleteCategory,
   createVehicle,
-  getVehicles,
+  getAdminApprovedVehicles,
+  getAdminNotApprovedVehicles,
   getVehicleById,
   getVehicleByFilter,
   getTopBookedVehicles,
   getLowPriceVehicle,
+  getVehiclesByUserId,
   updateVehicle,
   deleteVehicle
 } = require('../Controllers/vehicle.js');
@@ -61,10 +65,12 @@ router.delete('/categorie/:id', upload.array('images'), deleteCategory); // Dele
 // ==================== VEHICLE ROUTES ==================== //
 // Vehicle CRUD and Listing
 router.post('/vehicle', upload.array('images', 5), createVehicle);  // Create vehicle with up to 5 images
-router.get('/vehicle', getVehicles);                                // Get all vehicles
+router.get('/approvedvehicle', getAdminApprovedVehicles);           // Get admin approved vehicles
+router.get('/notapprovedvehicle', getAdminNotApprovedVehicles);     // Get admin Not approved vehicles
 router.get('/vehicle/:id', getVehicleById);                         // Get vehicle by ID
 router.get('/topbooking', getTopBookedVehicles);                    // Get most booked vehicles / limit 6
 router.get('/filtervehicles', getVehicleByFilter)
+router.get('/affiliate/:userId', getVehiclesByUserId);
 router.get('/startfrom', getLowPriceVehicle);                       // Get low price vehicle
 router.put('/vehicle/:id', upload.array('images', 5), updateVehicle); // Update vehicle
 router.delete('/vehicle/:id', deleteVehicle);                       // Delete vehicle
@@ -95,7 +101,7 @@ const {
 } = require('../Controllers/review.js');
 
 // Reviews
-router.post('/review', createReview);                   // Post a review
+router.post('/review', createReview);                // Post a review
 router.get('/review/car/:carId', getReviewsByCarId);    // Get reviews for a specific car
 router.get('/top-rated', getTopRatedCars);              // Get top-rated vehicles, limit 6
 

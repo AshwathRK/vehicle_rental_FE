@@ -5,7 +5,7 @@ const { v4: uuidv4 } = require('uuid');
 const jwt = require('jsonwebtoken');
 
 const handleGetLogin = async (req, res, next) => {
-    // debugger
+    debugger
     try {
         if (!req.user || !req.user.email) {
             return res.status(401).json({ status: false, message: "Unauthorized access" });
@@ -33,6 +33,15 @@ const handleGetLogin = async (req, res, next) => {
             dateofbirth: user.dateofbirth,
             secondary: user.secondary,
             website: user.website,
+            accountholder: user.accountholder,
+            accountnumber: user.accountnumber,
+            bankname: user.bankname,
+            ifsc: user.ifsc,
+            address: user.address,
+            city: user.city,
+            country: user.country,
+            postal: user.postal,
+            state: user.state,
             profile: user.profile.map(img => {
                 const base64 = img.data.toString('base64');
                 return `data:${img.contentType};base64,${base64}`;
@@ -341,6 +350,31 @@ const updateProfileImage = async (req, res) => {
     }
 };
 
+const getAllAffiliateUsersWithCar = async (req, res) => {
+    try {
+
+        const affiliates = await User.find({ profileType: 'Affiliate' })
+        if (!affiliates) {
+            return res.status(404).json({
+                message: 'No data found!'
+            })
+        }
+
+        return res.status(200).json({
+            message: 'Data fetched successfully',
+            affiliates
+        })
+
+    } catch (error) {
+        console.error("Error updating profile image:", error);
+        return res.status(500).json({
+            status: false,
+            message: "Server error while updating profile image",
+        });
+    }
+}
+
+
 
 const logoutUser = (req, res, next) => {
     res.clearCookie('accessToken');
@@ -355,5 +389,5 @@ const logoutUser = (req, res, next) => {
 }
 
 module.exports = {
-    handleGetLogin, handlePostLogin, handleGetSignUp, handlePostSignUp, handleUpdateUser, updateProfileImage, getUserDetails, logoutUser
+    handleGetLogin, handlePostLogin, handleGetSignUp, handlePostSignUp, handleUpdateUser, updateProfileImage, getUserDetails, logoutUser, getAllAffiliateUsersWithCar
 };

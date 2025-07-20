@@ -1,4 +1,5 @@
 const { Vehicle, Category } = require('../Model/vehicle');
+const User =require('../Model/user')
 
 // ======================== CATEGORY CONTROLLERS ======================== //
 
@@ -199,10 +200,20 @@ const createVehicle = async (req, res) => {
     }
 };
 
-// Command: Get all vehicles
-const getVehicles = async (req, res) => {
+// Command: Get admin approved vehicles
+const getAdminApprovedVehicles = async (req, res) => {
     try {
-        const vehicles = await Vehicle.find();
+        const vehicles = await Vehicle.find({isAdminApproved:true});
+        res.status(200).json(vehicles);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Command: Get admin approved vehicles
+const getAdminNotApprovedVehicles = async (req, res) => {
+    try {
+        const vehicles = await Vehicle.find({isAdminApproved:false});
         res.status(200).json(vehicles);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -217,6 +228,35 @@ const getVehicleById = async (req, res) => {
         res.status(200).json(vehicle);
     } catch (error) {
         res.status(500).json({ error: error.message });
+    }
+};
+
+// Command: Get vehicle by userId
+const getVehiclesByUserId = async (req, res) => {
+    try {
+        const { userId } = req.params;
+
+        // Optional: Validate if user is affiliate
+        const user = await User.findById(userId);
+        if (!user || user.profileType !== 'Affiliate') {
+            return res.status(404).json({ message: 'Affiliate user not found' });
+        }
+
+        // Fetch all vehicles added by this user
+        const vehicles = await Vehicle.find({ userId });
+
+        if (vehicles.length === 0) {
+            return res.status(404).json({ message: 'No vehicles found for this affiliate' });
+        }
+
+        return res.status(200).json({
+            message: 'Vehicles fetched successfully',
+            data: vehicles
+        });
+
+    } catch (error) {
+        console.error('Error:', error);
+        return res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
 
@@ -591,10 +631,12 @@ module.exports = {
     updateCategory,
     deleteCategory,
     createVehicle,
-    getVehicles,
+    getAdminApprovedVehicles,
+    getAdminNotApprovedVehicles,
     getVehicleById,
     getVehicleByFilter,
     getTopBookedVehicles,
+    getVehiclesByUserId,
     getLowPriceVehicle,
     updateVehicle,
     deleteVehicle
