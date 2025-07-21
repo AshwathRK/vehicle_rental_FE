@@ -115,12 +115,14 @@ const deleteCategory = async (req, res) => {
 
 // Command: Create a new vehicle with images and metadata
 const createVehicle = async (req, res) => {
+    debugger
     try {
+        console.log(req.body.vehicleInfo)
         const {
             make, model, year, category, licensePlate, transmission, fuelType,
             pricePerDay, location, insurance, driverRequirements,
             termsAndConditions, cancellationPolicy, maintenance, userId
-        } = req.body;
+        } = req.body.vehicleInfo;
 
         const requiredFields = {
             make, model, year, category, licensePlate, transmission, fuelType,

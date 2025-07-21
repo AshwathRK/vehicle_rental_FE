@@ -64,12 +64,12 @@ router.delete('/categorie/:id', upload.array('images'), deleteCategory); // Dele
 
 // ==================== VEHICLE ROUTES ==================== //
 // Vehicle CRUD and Listing
-router.post('/vehicle', upload.array('images', 5), createVehicle);  // Create vehicle with up to 5 images
+router.post('/vehicle',verifyTokenfromCookies, upload.array('images', 5), createVehicle);  // Create vehicle with up to 5 images
 router.get('/approvedvehicle', getAdminApprovedVehicles);           // Get admin approved vehicles
 router.get('/notapprovedvehicle', getAdminNotApprovedVehicles);     // Get admin Not approved vehicles
 router.get('/vehicle/:id', getVehicleById);                         // Get vehicle by ID
-router.get('/topbooking', getTopBookedVehicles);                    // Get most booked vehicles / limit 6
-router.get('/filtervehicles', getVehicleByFilter)
+router.get('/topbooking', getTopBookedVehicles);                   // Get most booked vehicles / limit 6
+router.get('/filtervehicles', getVehicleByFilter);
 router.get('/affiliate/:userId', getVehiclesByUserId);
 router.get('/startfrom', getLowPriceVehicle);                       // Get low price vehicle
 router.put('/vehicle/:id', upload.array('images', 5), updateVehicle); // Update vehicle
