@@ -245,7 +245,44 @@ const getVehicleById = async (req, res) => {
     try {
         const vehicle = await Vehicle.findById(req.params.id);
         if (!vehicle) return res.status(404).json({ error: 'Vehicle not found' });
-        res.status(200).json(vehicle);
+
+        const formatted = {
+            _id: vehicle._id,
+            make: vehicle.make,
+            model: vehicle.model,
+            year: vehicle.year,
+            category: vehicle.category,
+            transmission: vehicle.transmission,
+            licensePlate: vehicle.licensePlate,
+            transmission: vehicle.transmission,
+            mileage: vehicle.mileage,
+            seatingCapacity: vehicle.seatingCapacity,
+            numberOfDoors: vehicle.numberOfDoors,
+            airConditioning: vehicle.airConditioning,
+            luggageCapacity: vehicle.luggageCapacity,
+            insurance: vehicle.insurance,
+            driverRequirements: vehicle.driverRequirements,
+            maintenance: vehicle.maintenance,
+            pickup: vehicle.pickup,
+            dropoff: vehicle.dropoff,
+            city: vehicle.city,
+            delivery: vehicle.delivery,
+            location: vehicle.location,
+            fuelPolicy: vehicle.fuelPolicy,
+            fuelType: vehicle.fuelType,
+            pricePerHour: vehicle.pricePerHour,
+            pricePerDay: vehicle.pricePerDay,
+            discounts: vehicle.discounts,
+            images: vehicle.images.map(img => {
+                return {
+                    contentType: img.contentType,
+                    data: img.data.toString('base64')
+                };
+            })
+
+        }
+
+        res.status(200).json(formatted);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -258,7 +295,7 @@ const getVehiclesByUserId = async (req, res) => {
 
         // Optional: Validate if user is affiliate
         const user = await User.findById(userId);
-        if (!user || user.profileType !== 'Affiliate') {
+        if (!user) {
             return res.status(404).json({ message: 'Affiliate user not found' });
         }
 

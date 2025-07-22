@@ -303,7 +303,6 @@ const handleUpdateUser = async (req, res, next) => {
 };
 
 const updateProfileImage = async (req, res) => {
-    debugger
     try {
         const userId = req.user.uID;
 
