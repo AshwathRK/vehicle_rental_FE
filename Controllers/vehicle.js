@@ -115,30 +115,21 @@ const deleteCategory = async (req, res) => {
 
 // Command: Create a new vehicle with images and metadata
 const createVehicle = async (req, res) => {
-    debugger
     try {
-        console.log(req.body.vehicleInfo)
+        // Parse stringified vehicleInfo sent in FormData
+        const vehicleInfo = JSON.parse(req.body.vehicleInfo);
+
         const {
-            make, model, year, category, licensePlate, transmission, fuelType,
-            pricePerDay, location, insurance, driverRequirements,
-            termsAndConditions, cancellationPolicy, maintenance, userId
-        } = req.body.vehicleInfo;
+            make, model, registerModel, category, registerNumber, transmission,
+            fuelType, mileage, seatingCapacity, numberOfDoors, airConditioning,
+            luggageCapacity, insuranceType, provider, expiryDate, minLicense,
+            minage, lastServiced, nextServiceDue, vehicleCondition, odometerReading,
+            pickup, drop, city, doorDelivery, fuelPolicy, pricePerHour, pricePerDay,
+            weekdiscount, monthlydiscount
+        } = vehicleInfo;
 
-        const requiredFields = {
-            make, model, year, category, licensePlate, transmission, fuelType,
-            pricePerDay, 'location.pickup': location?.pickup, userId
-        };
-
-        for (const [key, value] of Object.entries(requiredFields)) {
-            if (!value) {
-                return res.status(400).json({
-                    status: false,
-                    message: `${key} is required.`
-                });
-            }
-        }
-
-        const existingVehicle = await Vehicle.findOne({ licensePlate });
+        // Check for existing vehicle
+        const existingVehicle = await Vehicle.findOne({ licensePlate: registerNumber });
         if (existingVehicle) {
             return res.status(409).json({
                 status: false,
@@ -146,47 +137,73 @@ const createVehicle = async (req, res) => {
             });
         }
 
+        // Get category reference
+        const getCategory = await Category.findOne({ category });
+
+        // Handle uploaded images
         const imageBuffers = req.files?.map(file => ({
             data: file.buffer,
             contentType: file.mimetype
-        }));
+        })) || [];
 
+        // Construct vehicle data
         const vehicleData = {
-            make, model, year, category, licensePlate, transmission, fuelType,
-            mileage: req.body.mileage,
-            seatingCapacity: req.body.seatingCapacity,
-            numberOfDoors: req.body.numberOfDoors,
-            airConditioning: req.body.airConditioning,
-            luggageCapacity: req.body.luggageCapacity,
-            pricePerDay, pricePerHour: req.body.pricePerHour, deposit: req.body.deposit,
-            discounts: req.body.discounts,
-            fuelPolicy: req.body.fuelPolicy,
+            make,
+            model,
+            year: registerModel, // Assuming this is what you meant
+            category: getCategory?._id,
+            licensePlate: registerNumber,
+            transmission,
+            fuelType,
+            mileage,
+            seatingCapacity,
+            numberOfDoors,
+            airConditioning: airConditioning==="Available"?true:false,
+            luggageCapacity,
+            pricePerDay,
+            pricePerHour,
+            fuelPolicy,
+            discounts: {
+                weekly: weekdiscount,
+                monthly: monthlydiscount,
+            },
             location: {
-                pickup: location.pickup,
-                dropoff: location.dropoff,
-                city: location.city
+                pickup,
+                dropoff: drop,
+                city,
+                doorDelivery,
             },
             insurance: {
-                type: insurance.type,
-                provider: insurance.provider,
-                expiryDate: insurance.expiryDate
+                type: insuranceType,
+                provider,
+                expiryDate
             },
             driverRequirements: {
-                minAge: driverRequirements.minAge,
-                licenseType: driverRequirements.licenseType
+                minAge: minage,
+                licenseType: minLicense,
             },
-            termsAndConditions, cancellationPolicy,
             maintenance: {
-                lastServiced: maintenance.lastServiced,
-                nextServiceDue: maintenance.nextServiceDue,
-                condition: maintenance.condition,
-                odometerReading: maintenance.odometerReading
+                lastServiced,
+                nextServiceDue,
+                condition: vehicleCondition,
+                odometerReading
             },
-            userId, isAdminApproved: req.body.isAdminApproved,
-            images: imageBuffers || []
+            userId: req.user.uID,
+            isAdminApproved: false,
+            images: imageBuffers
         };
 
+        const {uID} = req.user
+
+        const user = await User.findOne({_id: uID})
+
+        if(user.profileType==='Admin'){
+            vehicleData.isAdminApproved=true
+        }
+
+        // Save vehicle
         const newVehicle = await Vehicle.create(vehicleData);
+
         return res.status(201).json({
             status: true,
             message: "Vehicle created successfully.",
@@ -201,6 +218,7 @@ const createVehicle = async (req, res) => {
         });
     }
 };
+
 
 // Command: Get admin approved vehicles
 const getAdminApprovedVehicles = async (req, res) => {
