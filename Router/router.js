@@ -25,14 +25,14 @@ router.get('/signup', handleGetSignUp);                        // Get signup pag
 router.post('/signup', handlePostSignUp);                      // Register new user
 router.get('/user', verifyTokenfromCookies, getUserDetails);   // Get logged-in user details
 router.put('/user/:userId', verifyTokenfromCookies, handleUpdateUser); // (Optional) Update user
-router.put('/updateprofile/:userID', verifyTokenfromCookies, upload.single('profile'), updateProfileImage )
+router.put('/updateprofile/:userID', verifyTokenfromCookies, upload.single('profile'), updateProfileImage)
 router.get('/getaffiliate', getAllAffiliateUsersWithCar)
 router.get('/logout', logoutUser);                             // Logout and clear token
 
 
 //===================== Verify Email ======================= //
 
-const {sendResetOtp, verifyOtp, resetPassword} = require('../Controllers/verifyEmail.js')
+const { sendResetOtp, verifyOtp, resetPassword } = require('../Controllers/verifyEmail.js')
 
 router.post('/sendotp', sendResetOtp);
 router.post('/verifyotp', verifyOtp);
@@ -41,6 +41,7 @@ router.put('/updatepassword/:userId', resetPassword);
 // ==================== CATEGORY ROUTES ==================== //
 const {
   getAllCategory,
+  getCategoryById,
   createCategory,
   updateCategory,
   deleteCategory,
@@ -58,13 +59,14 @@ const {
 
 // Category CRUD
 router.get('/categories', getAllCategory);                         // Get all categories
+router.get('/categorie/:id', getCategoryById)                      // Get categories by ID
 router.post('/categorie', upload.array('images'), createCategory); // Create category with image upload
 router.put('/categorie/:id', upload.array('images'), updateCategory); // Update category by ID
 router.delete('/categorie/:id', upload.array('images'), deleteCategory); // Delete category by ID
 
 // ==================== VEHICLE ROUTES ==================== //
 // Vehicle CRUD and Listing
-router.post('/vehicle',verifyTokenfromCookies, upload.array('images', 5), createVehicle);  // Create vehicle with up to 5 images
+router.post('/vehicle', verifyTokenfromCookies, upload.array('images', 5), createVehicle);  // Create vehicle with up to 5 images
 router.get('/approvedvehicle', getAdminApprovedVehicles);           // Get admin approved vehicles
 router.get('/notapprovedvehicle', getAdminNotApprovedVehicles);     // Get admin Not approved vehicles
 router.get('/vehicle/:id', getVehicleById);                         // Get vehicle by ID

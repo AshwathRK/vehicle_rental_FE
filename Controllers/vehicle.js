@@ -35,6 +35,31 @@ const getAllCategory = async (req, res) => {
     }
 };
 
+// Command: Get Category by ID
+const getCategoryById = async (req, res) => {
+    // debugger
+    const { id } = req.params;
+
+    try {
+        const category = await Category.findOne({ _id: id });
+
+        if (!category) {
+            return res.status(404).json({
+                message: 'No category found'
+            });
+        }
+
+        return res.status(200).json({
+            message: 'Data fetched successfully',
+            category
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: `Something went wrong: ${error.message}`
+        });
+    }
+};
+
 // Command: Create a new category with image upload
 const createCategory = async (req, res) => {
     try {
@@ -272,6 +297,7 @@ const getVehicleById = async (req, res) => {
             pricePerHour: vehicle.pricePerHour,
             pricePerDay: vehicle.pricePerDay,
             discounts: vehicle.discounts,
+            isAdminApproved: vehicle.isAdminApproved,
             images: vehicle.images.map(img => {
                 return {
                     contentType: img.contentType,
@@ -594,7 +620,7 @@ const updateVehicle = async (req, res) => {
         if (Object.keys(req.body).length > 0) {
             // License plate uniqueness check only if licensePlate is changing
             if (registerNumber && registerNumber !== existingVehicle.licensePlate) {
-                const vehicleWithLicensePlate = await Vehicle.findOne({ licensePlate:registerNumber });
+                const vehicleWithLicensePlate = await Vehicle.findOne({ licensePlate: registerNumber });
                 if (vehicleWithLicensePlate) {
                     return res.status(409).json({
                         status: false,
@@ -607,14 +633,14 @@ const updateVehicle = async (req, res) => {
                 make: make || existingVehicle.make,
                 model: model || existingVehicle.model,
                 year: registerModel || existingVehicle.year,
-                category:  getCategory?._id || existingVehicle.category,
+                category: getCategory?._id || existingVehicle.category,
                 licensePlate: registerNumber || existingVehicle.licensePlate,
                 transmission: transmission || existingVehicle.transmission,
                 fuelType: fuelType || existingVehicle.fuelType,
                 mileage: mileage || existingVehicle.mileage,
                 seatingCapacity: seatingCapacity || existingVehicle.seatingCapacity,
                 numberOfDoors: numberOfDoors || existingVehicle.numberOfDoors,
-                airConditioning: airConditioning=='Available'?true:false || existingVehicle.airConditioning,
+                airConditioning: airConditioning == 'Available' ? true : false || existingVehicle.airConditioning,
                 luggageCapacity: luggageCapacity || existingVehicle.luggageCapacity,
                 pricePerDay: pricePerDay || existingVehicle.pricePerDay,
                 pricePerHour: pricePerHour || existingVehicle.pricePerHour,
@@ -695,6 +721,7 @@ const deleteVehicle = async (req, res) => {
 // Export all controllers
 module.exports = {
     getAllCategory,
+    getCategoryById,
     createCategory,
     updateCategory,
     deleteCategory,
