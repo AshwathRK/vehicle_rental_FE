@@ -228,8 +228,31 @@ const getUserDetails = async (req, res) => {
     }
 };
 
+const getUserDetailsById = async (req, res) =>{
+    try {
+        const {id} = req.params
+
+        const userDetails = await User.findById({_id:id})
+
+        if(!userDetails){
+            res.status(404).json({
+                message: "The user not found!"
+            })
+        }
+
+        return res.status(200).json({
+            message: 'The user data fetched successfully',
+            userDetails
+        })
+        
+    } catch (error) {
+        res.status(500).json({
+            message:'Something went wrong!',
+        })
+    }
+}
+
 const handleUpdateUser = async (req, res, next) => {
-    debugger
     try {
         // console.log(req.user)
         const userId = req.user.uID;
@@ -387,5 +410,5 @@ const logoutUser = (req, res, next) => {
 }
 
 module.exports = {
-    handleGetLogin, handlePostLogin, handleGetSignUp, handlePostSignUp, handleUpdateUser, updateProfileImage, getUserDetails, logoutUser, getAllAffiliateUsersWithCar
+    handleGetLogin, handlePostLogin, getUserDetailsById, handleGetSignUp, handlePostSignUp, handleUpdateUser, updateProfileImage, getUserDetails, logoutUser, getAllAffiliateUsersWithCar
 };

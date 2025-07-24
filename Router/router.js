@@ -12,6 +12,7 @@ const {
   handlePostLogin,
   handlePostSignUp,
   getUserDetails,
+  getUserDetailsById,
   handleUpdateUser,
   updateProfileImage,
   getAllAffiliateUsersWithCar,
@@ -27,6 +28,7 @@ router.get('/user', verifyTokenfromCookies, getUserDetails);   // Get logged-in 
 router.put('/user/:userId', verifyTokenfromCookies, handleUpdateUser); // (Optional) Update user
 router.put('/updateprofile/:userID', verifyTokenfromCookies, upload.single('profile'), updateProfileImage)
 router.get('/getaffiliate', getAllAffiliateUsersWithCar)
+router.get('/user/:id', getUserDetailsById)
 router.get('/logout', logoutUser);                             // Logout and clear token
 
 

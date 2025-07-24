@@ -297,7 +297,11 @@ const getVehicleById = async (req, res) => {
             pricePerHour: vehicle.pricePerHour,
             pricePerDay: vehicle.pricePerDay,
             discounts: vehicle.discounts,
+            averageRating: vehicle.averageRating,
+            reviewCount: vehicle.reviewCount,
             isAdminApproved: vehicle.isAdminApproved,
+            userId: vehicle.userId,
+            bookingCount: vehicle.bookingCount,
             images: vehicle.images.map(img => {
                 return {
                     contentType: img.contentType,
