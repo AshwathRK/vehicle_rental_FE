@@ -53,6 +53,7 @@ const {
   getVehicleById,
   getVehicleByFilter,
   getTopBookedVehicles,
+  similierCars,
   getLowPriceVehicle,
   getVehiclesByUserId,
   updateVehicle,
@@ -75,6 +76,7 @@ router.get('/vehicle/:id', getVehicleById);                         // Get vehic
 router.get('/topbooking', getTopBookedVehicles);                   // Get most booked vehicles / limit 6
 router.get('/filtervehicles', getVehicleByFilter);
 router.get('/affiliate/:userId', getVehiclesByUserId);
+router.get('/similarcars/:categoryId', similierCars)
 router.get('/startfrom', getLowPriceVehicle);                       // Get low price vehicle
 router.put('/vehicle/:id', upload.array('images', 5), updateVehicle); // Update vehicle
 router.delete('/vehicle/:id', deleteVehicle);                       // Delete vehicle

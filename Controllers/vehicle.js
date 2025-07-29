@@ -722,6 +722,31 @@ const deleteVehicle = async (req, res) => {
     }
 };
 
+//Command: Fetching the similer cars
+const similierCars = async (req, res) => {
+    try {
+        const { categoryId } = req.params;
+
+        const suggestedVehicles = await Vehicle.find({ category: categoryId }).limit(5);
+
+        if (!suggestedVehicles || suggestedVehicles.length === 0) {
+            res.status(404).json({
+                message: 'No vehicles found for this category'
+            });
+        } else {
+            res.status(200).json({
+                message: 'Data fetched successfully',
+                suggestedVehicles
+            });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            message: 'Internal Server Error'
+        });
+    }
+};
+
 // Export all controllers
 module.exports = {
     getAllCategory,
@@ -734,6 +759,7 @@ module.exports = {
     getAdminNotApprovedVehicles,
     getVehicleById,
     getVehicleByFilter,
+    similierCars,
     getTopBookedVehicles,
     getVehiclesByUserId,
     getLowPriceVehicle,
