@@ -727,7 +727,12 @@ const similierCars = async (req, res) => {
     try {
         const { categoryId } = req.params;
 
-        const suggestedVehicles = await Vehicle.find({ category: categoryId }).limit(5);
+        const selectedCar = req.header('SelectedCar')
+
+        const suggestedVehicles = await Vehicle.find({
+            category: categoryId,
+            _id: { $ne: selectedCar } // Exclude the selected car by its ID
+        }).limit(5);
 
         if (!suggestedVehicles || suggestedVehicles.length === 0) {
             res.status(404).json({
