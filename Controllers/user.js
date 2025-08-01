@@ -395,8 +395,6 @@ const getAllAffiliateUsersWithCar = async (req, res) => {
     }
 }
 
-
-
 const logoutUser = (req, res, next) => {
     res.clearCookie('accessToken');
     res.clearCookie('refreshToken');
