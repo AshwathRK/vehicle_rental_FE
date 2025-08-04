@@ -4,10 +4,11 @@ const {Vehicle} = require('../Model/vehicle')
 
 // Get by carId
 const handleGetBookingStatusByCarId = async (req, res) => {
+  // debugger
     const { carId } = req.params;
 
     try {
-        const response = await BookingStatus.find({ carId: mongoose.Types.ObjectId(carId) });
+        const response = await BookingStatus.find({ carId: carId});
 
         if (response.length === 0) {
             return res.status(404).json({ message: 'No bookings found!' });
