@@ -8,7 +8,7 @@ const handleGetBookingStatusByCarId = async (req, res) => {
     const { carId } = req.params;
 
     try {
-        const response = await BookingStatus.find({ carId: carId});
+        const response = await BookingStatus.find({ carId: carId, status: { $eq: 'Confirmed' } });
 
         if (response.length === 0) {
             return res.status(404).json({ message: 'No bookings found!' });
