@@ -111,6 +111,13 @@ router.post('/review', createReview);                // Post a review
 router.get('/review/car/:carId', getReviewsByCarId);    // Get reviews for a specific car
 router.get('/top-rated', getTopRatedCars);              // Get top-rated vehicles, limit 6
 
+
+// ==================== PAYMENT ROUTES ==================== //
+const { createPaymentPage } = require('../Controllers/payment.js');
+
+// Payment 
+router.post('/payment', verifyTokenfromCookies, createPaymentPage); // Create payment page
+
 // ==================== 404 NOT FOUND HANDLER ==================== //
 router.use((req, res, next) => {
   res.status(404).json({
