@@ -113,10 +113,11 @@ router.get('/top-rated', getTopRatedCars);              // Get top-rated vehicle
 
 
 // ==================== PAYMENT ROUTES ==================== //
-const { createPaymentPage } = require('../Controllers/payment.js');
+const paymentController = require('../Controllers/payment');
 
-// Payment 
-router.post('/payment', verifyTokenfromCookies, createPaymentPage); // Create payment page
+router.post('/order', paymentController.createOrder);
+router.post('/verify', paymentController.verifyPayment);
+
 
 // ==================== 404 NOT FOUND HANDLER ==================== //
 router.use((req, res, next) => {

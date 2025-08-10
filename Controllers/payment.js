@@ -1,42 +1,47 @@
-const axios = require("axios");
-require("dotenv").config();
+// Controllers/paymentController.js
+const Razorpay = require('razorpay');
+const crypto = require('crypto');
 
-const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID;
-const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;
+require('dotenv').config();
 
-const createPaymentPage = async (req, res) => {
-    debugger
-  try {
-    const { name, email, amount } = req.body;
+const razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET
+});
 
-    const response = await axios.post("https://api.razorpay.com/v1/payment_pages", {
-      title: "Order Payment",
-      description: "Pay for your order",
-      amount: amount * 100, // in paise
-      currency: "INR",
-      customer: {
-        name,
-        email,
-      },
-      redirect_url: 'http://localhost:5173/',
-      notes: {
-        order_id: `order_${Date.now()}`,
-      },
-    }, {
-      auth: {
-        username: RAZORPAY_KEY_ID,
-        password: RAZORPAY_KEY_SECRET,
-      },
-    });
-
-    res.json({ url: response.data.short_url });
-  } catch (error) {
-    console.error("Error creating payment page:", error.response?.data || error.message);
-    res.status(500).json({ error: "Failed to create payment page" });
-  }
+// Create order
+exports.createOrder = async (req, res) => {
+    try {
+        const { amount, currency = 'INR', receipt } = req.body;
+        const options = {
+            amount: amount * 100, // Convert to paise
+            currency,
+            receipt: receipt || `receipt_order_${Date.now()}`
+        };
+        const order = await razorpay.orders.create(options);
+        res.json(order);
+    } catch (error) {
+        console.error('Error creating Razorpay order:', error);
+        res.status(500).json({ error: 'Unable to create order' });
+    }
 };
 
+// Verify payment
+exports.verifyPayment = (req, res) => {
+    try {
+        const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
-module.exports = {
-    createPaymentPage
-}
+        const hmac = crypto.createHmac('sha256', process.env.RAZORPAY_KEY_SECRET);
+        hmac.update(`${razorpay_order_id}|${razorpay_payment_id}`);
+        const generated_signature = hmac.digest('hex');
+
+        if (generated_signature === razorpay_signature) {
+            res.json({ success: true, message: 'Payment verified successfully' });
+        } else {
+            res.status(400).json({ success: false, message: 'Invalid signature' });
+        }
+    } catch (error) {
+        console.error('Error verifying payment:', error);
+        res.status(500).json({ error: 'Verification failed' });
+    }
+};
