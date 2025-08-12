@@ -20,7 +20,7 @@ const {
 } = require('../Controllers/user');
 
 // Login and Signup
-router.get('/', verifyTokenfromCookies, handleGetLogin);       // Get login page (if user has token)
+router.get('/', verifyTokenfromCookies, handleGetLogin);      // Get login page (if user has token)
 router.post('/', handlePostLogin);                             // Login user
 router.get('/signup', handleGetSignUp);                        // Get signup page
 router.post('/signup', handlePostSignUp);                      // Register new user

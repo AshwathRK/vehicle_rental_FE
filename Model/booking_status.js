@@ -1,5 +1,17 @@
 const mongoose = require('mongoose');
 
+const addressSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  AddressLine1: { type: String, required: true },
+  email: { type: String, required: true },
+  AddressLine2: { type: String },
+  City: { type: String, required: true },
+  state: { type: String, required: true },
+  Zipcode: { type: String, required: true },
+  Country: { type: String, required: true },
+  mobile: { type: String, required: true }
+}, { _id: false }); // _id: false so it doesn't create an extra ID for the subdocument
+
 const bookingSchema = new mongoose.Schema({
   carId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -23,7 +35,16 @@ const bookingSchema = new mongoose.Schema({
     type: String,
     enum: ['Confirmed', 'Cancelled', 'Pending'],
     default: 'Pending'
+  },
+  address: {
+    type: addressSchema,
+    required: true
+  },
+  address: {
+    type: String,
+    required: true
   }
+
 }, { timestamps: true });
 
 module.exports = mongoose.model('BookingStatus', bookingSchema);
