@@ -118,6 +118,10 @@ const paymentController = require('../Controllers/payment');
 router.post('/order', paymentController.createOrder);
 router.post('/verify', paymentController.verifyPayment);
 
+// ==================== PAYMENT EMAIL ROUTE ==================== //
+const {handlePaymentEmail} = require('../Controllers/paymentemail');  
+
+router.post('/razorpay/webhook', express.json({ type: '*/*' }), handlePaymentEmail); // Handle Razorpay webhook for payment email
 
 // ==================== 404 NOT FOUND HANDLER ==================== //
 router.use((req, res, next) => {

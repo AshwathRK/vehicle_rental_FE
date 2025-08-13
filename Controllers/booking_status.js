@@ -56,7 +56,7 @@ const handleGetBookingsStatusByBookingId = async (req, res) => {
 
 // ✅ Create booking
 const handleCreateBookingStatus = async (req, res) => {
-  debugger
+  // debugger
   try {
     const { carId, userId, startDateTime, endDateTime, status, address, pickup } = req.body;
 
@@ -120,7 +120,7 @@ const handleCreateBookingStatus = async (req, res) => {
     });
 
   } catch (error) {
-    return res.status(500).json({ message: `Error: ${error.message}` });
+    return res.status(500).json({ message: `Error: ${error.message}`});
   }
 };
 

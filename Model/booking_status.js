@@ -10,7 +10,7 @@ const addressSchema = new mongoose.Schema({
   Zipcode: { type: String, required: true },
   Country: { type: String, required: true },
   mobile: { type: String, required: true }
-}, { _id: false }); // _id: false so it doesn't create an extra ID for the subdocument
+}, { _id: false });
 
 const bookingSchema = new mongoose.Schema({
   carId: {
@@ -38,11 +38,9 @@ const bookingSchema = new mongoose.Schema({
   },
   address: {
     type: addressSchema,
-    required: true
   },
-  address: {
+  pickup: {
     type: String,
-    required: true
   }
 
 }, { timestamps: true });
