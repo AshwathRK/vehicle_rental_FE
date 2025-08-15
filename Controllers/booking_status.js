@@ -22,10 +22,11 @@ const handleGetBookingStatusByCarId = async (req, res) => {
 
 // Get by userId
 const handleGetBookingStatusByUserId = async (req, res) => {
+  debugger
   const { userId } = req.params;
 
   try {
-    const response = await BookingStatus.find({ userId: mongoose.Types.ObjectId(userId) });
+    const response = await BookingStatus.find({ userId });
 
     if (response.length === 0) {
       return res.status(404).json({ message: 'No bookings found!' });
@@ -120,7 +121,7 @@ const handleCreateBookingStatus = async (req, res) => {
     });
 
   } catch (error) {
-    return res.status(500).json({ message: `Error: ${error.message}`});
+    return res.status(500).json({ message: `Error: ${error.message}` });
   }
 };
 
@@ -130,37 +131,42 @@ const handleUpdateBookingStatus = async (req, res) => {
   const updateData = req.body;
 
   try {
-    // Step 1: Get the existing booking
+    // Validate updateData
+    if (!updateData || typeof updateData !== 'object') {
+      return res.status(400).json({ message: 'Invalid update data' });
+    }
+
+    // Get the existing booking
     const existingBooking = await BookingStatus.findById(bookingId);
     if (!existingBooking) {
       return res.status(404).json({ message: 'Booking not found!' });
     }
 
-    // Step 2: Perform update
-    const updated = await BookingStatus.findByIdAndUpdate(
+    // Perform update
+    const updatedBooking = await BookingStatus.findByIdAndUpdate(
       bookingId,
       updateData,
       { new: true }
     );
 
-    // Step 3: Check if status changed to "Cancelled" from "Confirmed"
+    // Check if status changed to "Cancelled" from "Confirmed"
     if (
       updateData.status === 'Cancelled' &&
       existingBooking.status === 'Confirmed'
     ) {
       await Vehicle.findByIdAndUpdate(
         existingBooking.carId,
-        { $inc: { bookingCount: -1 } },
-        { new: true }
+        { $inc: { bookingCount: -1 } }
       );
     }
 
     return res.status(200).json({
       message: 'Booking updated successfully!',
-      data: updated
+      data: updatedBooking
     });
 
   } catch (error) {
+    console.error(error);
     return res.status(500).json({ message: `Error: ${error.message}` });
   }
 };

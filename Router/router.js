@@ -117,6 +117,7 @@ const paymentController = require('../Controllers/payment');
 
 router.post('/order', paymentController.createOrder);
 router.post('/verify', paymentController.verifyPayment);
+router.get('/payment/:id', paymentController.getPaymentDetails);
 
 // ==================== PAYMENT EMAIL ROUTE ==================== //
 // const { handlePaymentEmail } = require('../Controllers/paymentemail');

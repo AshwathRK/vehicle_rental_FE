@@ -29,6 +29,7 @@ exports.createOrder = async (req, res) => {
 // Verify payment
 exports.verifyPayment = (req, res) => {
     try {
+        debugger
         const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
         const hmac = crypto.createHmac('sha256', process.env.RAZORPAY_KEY_SECRET);
@@ -45,3 +46,19 @@ exports.verifyPayment = (req, res) => {
         res.status(500).json({ error: 'Verification failed' });
     }
 };
+
+exports.getPaymentDetails = async(req, res) => {
+    try {
+        const paymentId = req.params.id;
+        if (!paymentId) {
+            return res.status(400).json({ error: 'Payment ID is required' });
+        }
+        const payment = await razorpay.payments.fetch(paymentId);
+        if (!payment) {
+            return res.status(404).json({ error: 'Payment not found' });
+        }
+        res.status(200).json(payment);
+    } catch (error) {
+        res.status(500).json('Error fetching payment:', error);
+    }
+}

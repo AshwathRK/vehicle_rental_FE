@@ -41,6 +41,9 @@ const bookingSchema = new mongoose.Schema({
   },
   pickup: {
     type: String,
+  },
+  paymentId: {
+    type: String,
   }
 
 }, { timestamps: true });
